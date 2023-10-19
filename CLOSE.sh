@@ -44,7 +44,3 @@ else [ "$file_input" = "INPUT" ];
   	sudo iptables -L
   	exit 1	
 fi
-
-
-
-
