@@ -1,12 +1,10 @@
-# The goal for this script is to scan a target IP, then list out the open ports in both TCP and UDP
+# The goal for this script is to scan a target IP (?), then list out the open ports in both TCP and UDP
 # The associated Process ID should also be displayed next to the open port numbers
 
 
 Write-Output 'Welcome!'
-$target = Read-Host -Prompt 'Please enter the target address you would like to scan: '
-#Write-Output $target
-$range = 1..40
-$ErrorActionPreference = 'silentlycontinue'
+Read-Host -Prompt 'Please press Enter to scan the current machine for open TCP and UDP ports: '
+# $ErrorActionPreference = 'silentlycontinue'
 
 
 #If you want to find out which program (process) is listening on a specific port on your computer, 
@@ -14,13 +12,17 @@ $ErrorActionPreference = 'silentlycontinue'
 #Get-Process -Id (Get-NetTCPConnection -LocalPort 443).OwningProcess | ft Id, ProcessName, UserName, Path
 
 #list TCP open ports
-#Get-NetTcpConnection -State Listen | Select-Object LocalAddress,LocalPort| Sort-Object -Property LocalPort | Format-Table
+Write-Output 'Below is a list of open TCP ports and what service they are connected to:'
+Get-NetTcpConnection -State Listen,Established | Select-Object LocalAddress,LocalPort,State,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}}| Sort-Object -Property LocalPort | Format-Table
 
 #list UDP open ports and what service they are connected to
-#Get-NetUDPEndpoint | Where {$_.LocalAddress -eq "0.0.0.0"} | select LocalAddress,LocalPort,@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}}
+Write-Output 'Below is a list of open UDP ports and what service they are connected to:'
+Get-NetUDPEndpoint | Where-Object {$_.LocalAddress -eq "0.0.0.0"} | Select-Object LocalAddress,LocalPort,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} | Sort-Object -Property LocalPort | Format-Table
+
 
 
 # WAIT WAIT WAIT i might not have to do all the below stuff if the script only needs to run locally
+Function useless {
 foreach ($port in $range) {
     If (($a=Test-NetConnection -Port $port -WarningAction SilentlyContinue).tcpTestSucceeded -eq $true)
     {
@@ -62,4 +64,5 @@ foreach ($port in $range) {
     If ($r=="Open") {
         Write-Output 'Port currently open at port number '+$port
     }
+}
 }
