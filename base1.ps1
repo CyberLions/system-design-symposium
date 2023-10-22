@@ -3,7 +3,7 @@
 
 
 Write-Output 'Welcome!'
-Read-Host -Prompt 'Please press Enter to scan the current machine for open TCP and UDP ports: '
+# Read-Host -Prompt 'Please press Enter to scan the current machine for open TCP and UDP ports: '
 # $ErrorActionPreference = 'silentlycontinue'
 
 
@@ -13,15 +13,16 @@ Read-Host -Prompt 'Please press Enter to scan the current machine for open TCP a
 
 #list TCP open ports
 Write-Output 'Below is a list of open TCP ports and what service they are connected to:'
-Get-NetTcpConnection -State Listen,Established | Select-Object LocalAddress,LocalPort,State,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}}| Sort-Object -Property LocalPort | Format-Table
+Get-NetTcpConnection -State Listen,Established | Select-Object LocalAddress,LocalPort,State,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}},@{Name="Path";Expression={(Get-Process -Id $_.OwningProcess).Path}}| Sort-Object -Property LocalPort | Format-Table
+# expression for getting path: @{Name="Path";Expression={(Get-Process -Id $_.OwningProcess).Path}}
 
 #list UDP open ports and what service they are connected to
 Write-Output 'Below is a list of open UDP ports and what service they are connected to:'
-Get-NetUDPEndpoint | Where-Object {$_.LocalAddress -eq "0.0.0.0"} | Select-Object LocalAddress,LocalPort,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} | Sort-Object -Property LocalPort | Format-Table
+Get-NetUDPEndpoint | Where-Object {$_.LocalAddress -eq "0.0.0.0"} | Select-Object LocalAddress,LocalPort,@{Name="Process ID";Expression={(Get-Process -Id $_.OwningProcess).Id}},@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}},@{Name="Path";Expression={(Get-Process -Id $_.OwningProcess).Path}} | Sort-Object -Property LocalPort | Format-Table
 
 
 
-# WAIT WAIT WAIT i might not have to do all the below stuff if the script only needs to run locally
+# I thought i was doing a port scan at first, don't feel like deleting it yet
 Function useless {
 foreach ($port in $range) {
     If (($a=Test-NetConnection -Port $port -WarningAction SilentlyContinue).tcpTestSucceeded -eq $true)
